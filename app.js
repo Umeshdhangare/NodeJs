@@ -4,6 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 
 // Routes
 var indexRouter = require('./routes/index');
@@ -36,11 +38,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser('12345-67890-09876-54321'));
 
-// Basic Authentication
-var auth = (req, res, next) => {
-  console.log(req.signedCookies);
+// Session
+app.use(session({
+  name: 'session-id',
+  secret: '12345-67890-09876-54321',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore()
+}));
 
-  if (!req.signedCookies.user) {
+//Authentication with session
+
+var auth = (req, res, next) => {
+  console.log(req.session);
+
+  if (!req.session.user) {
     var authHeader = req.headers.authorization;
     if (!authHeader) {
       var err = new Error('You are not authenticated!');
@@ -53,7 +65,7 @@ var auth = (req, res, next) => {
     var pass = auth[1];
 
     if (user === 'admin' && pass === 'password') {
-      res.cookie('user', 'admin', { signed: true, resave: true });
+      req.session.user = 'admin';
       next(); // authorized
     }
     else {
@@ -63,7 +75,7 @@ var auth = (req, res, next) => {
     }
   }
   else {
-    if (req.signedCookies.user === 'admin') {
+    if (req.session.user === 'admin') {
       next();
     }
   }
