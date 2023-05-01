@@ -183,6 +183,7 @@ dishRouter.route('/:dishId/comments/:commentId')
         Dishes.findById(req.params.dishId)
             .then((dish) => {
                 if (dish != null && dish.comments.id(req.params.commentId) != null) {
+                    // update only of you have posted the comment
                     if(!(dish.comments.id(req.params.commentId).author).equals(req.user._id )){
                         var err = new Error('You are not authorized to perform this operation!');
                         err.status = 403;
@@ -222,6 +223,7 @@ dishRouter.route('/:dishId/comments/:commentId')
         Dishes.findById(req.params.dishId)
             .then((dish) => {
                 if (dish != null && dish.comments.id(req.params.commentId) != null) {
+                    // delete only if you have posted the comment
                     if(!(dish.comments.id(req.params.commentId).author).equals(req.user._id )){
                         var err = new Error('You are not authorized to perform this operation!');
                         err.status = 403;
