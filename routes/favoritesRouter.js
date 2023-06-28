@@ -60,8 +60,31 @@ favoriteRouter.route('/')
     });
 
 favoriteRouter.route('/:dishId')
-    .post(cors.corsWithOptions, authenticate.verifyUser, (req,res,next) => {
-    
+.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
+    Favorites.find({user: req.user._id})
+        .then((favorites) => {
+            if(!favorites){
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'applicatio/json');
+                return res.json({"exists":false, favorites});
+            }
+            else{
+                if(favorites.dishes.indexOf(req.params.dishId) < 0){
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'applicatio/json');
+                    return res.json({"exists":false, favorites});
+                }
+                else{
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'applicatio/json');
+                    return res.json({"exists":true, favorites});
+                }
+            }
+        })
+})
+.post(cors.corsWithOptions, authenticate.verifyUser, (req,res,next) => {
+        
     })
 
 module.exports = favoriteRouter;
